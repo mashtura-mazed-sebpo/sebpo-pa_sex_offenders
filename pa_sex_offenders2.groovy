@@ -26,14 +26,14 @@ context.setup([connectionTimeout: 100000, socketTimeout: 505000, retryCount: 1, 
 context.session.encoding = "UTF-8"; //change it according to web page's encoding
 context.session.escape = true
 
-UPS_Offenders22 script = new UPS_Offenders22(context)
+UPS_Offenders_2 script = new UPS_Offenders_2(context)
 script.initParsing()
 /*************Debug*******************/
 //script.parseData(null)
-//script.getMissingAddress("https://www.pameganslaw.state.pa.us/OffenderDetails/Addresses/8492",null)
+//script.getMissingAddress("https://www.pameganslaw.state.pa.us/OffenderDetails/Addresses/55309", null, null)
 /** **********************************/
 
-class UPS_Offenders22 {
+class UPS_Offenders_2 {
 
     final entityType
     final def moduleFactory = ModuleLoader.getFactory("d897871d8906be0173bebbbf155199ff441dd8d3")
@@ -48,15 +48,16 @@ class UPS_Offenders22 {
     def CACHED_DATA = []
     String pattern = "dd_MM_yyyy"
     String dateInString = new SimpleDateFormat(pattern).format(new Date())
-    final todayFile = "PA_CACHE_" + dateInString + "_.json"
+    final todayFile = "PA_CACHE_" + dateInString + "2_.json"
     File JASON_DATA_FILE = new File(todayFile)
 /*    String urlsFileName = "PA_SEX_OFF_$dateInString" + "URLS_.txt"
     File urlsFile = new File(urlsFileName)*/
     //loadFrom last run
     File HISTORY_LIST = new File("PA_CACHE_BASE_.json")
+
     /** *************************************/
 
-    UPS_Offenders22(context) {
+    UPS_Offenders_2(context, threadsCount = 0) {
         this.context = context
         addressParser = moduleFactory.getGenericAddressParser(context)
         driverSetup()
@@ -73,22 +74,27 @@ class UPS_Offenders22 {
     def entID = 1
 
     def initParsing() {
-        //    invokeBySelenium(mainUrl)
+        //invokeBySelenium(mainUrl)
         //println(detailsLinks.size())
         parseData(null)
-        driver.quit()
+//        driver.quit()
     }
 
     def parseData(def html) {
-        String urls = new File("us_pa_updated_urls2.txt").text
+        //String urls = new File("REMAINING_.txt").text
         //String urls = urlsFile.text
-        detailsLinks = urls.split(/\n/)
-        println("TOTAL: "+detailsLinks.size())
-         readFromCache(detailsLinks)
-        println("REMAINING : " + detailsLinks.size() + "\n$detailsLinks")
-        for (int i = 0; i < detailsLinks.size(); i++) {
-            handleDetailsPage(detailsLinks[i])
-        }
+/*        detailsLinks = urls.split(/\n/)
+        setdetailsLinks = detailsLinks.toSet()//println("TOTAL: " + setdetailsLinks.size())*/
+        readFromCache(detailsLinks)
+/*//println("REMAINING : " + setdetailsLinks.size() + "\n\n>>>>>>>>>>>>>>>>>")
+        for (int i = 0; i < setdetailsLinks.size(); i++) {
+            try {
+                handleDetailsPage(setdetailsLinks[i])
+            } catch (Exception e) {
+                Thread.sleep(30000)
+                handleDetailsPage(setdetailsLinks[i])
+            }
+        }*/
 //        return
 //        def details_matcher
 //        details_matcher = html =~ /(?i)href="(.+?OffenderDetails.+?)"/
@@ -117,9 +123,7 @@ class UPS_Offenders22 {
         }
         def entityUrl = srcUrl
         attrMap[FIELDS.URL] = entityUrl
-        def html
-        println("[Invoking ENTITY URL SELENIUM: $entityUrl]")
-        println("Parsing $entID $entityUrl")
+        def html//println("[Invoking ENTITY URL SELENIUM: $entityUrl]")//println("Parsing $entID $entityUrl")
         html = getHTML(entityUrl)
         if (html =~ /Offender Information Not Available/) {
             return
@@ -247,8 +251,7 @@ class UPS_Offenders22 {
     }
 
     def alias_capture(srcUrl, name) {
-        def alias_list = []
-        println("ALIAS: $srcUrl")
+        def alias_list = []//println("ALIAS: $srcUrl")
         // def html = invoke(srcUrl)
         def html = getHTML(srcUrl)
 
@@ -267,8 +270,7 @@ class UPS_Offenders22 {
     }
 
     def address_capture(srcUrl) {
-        def addrList = []
-        println("Address $srcUrl")
+        def addrList = []//println("Address $srcUrl")
         //def html = invoke(srcUrl)
         def html = getHTML(srcUrl)
         def addressBlockMatch = html =~ /(?is)Address<\/span>.*?class="gridDataItem br-responsive-sm">(.*?)<\/div>/
@@ -276,13 +278,11 @@ class UPS_Offenders22 {
             def address = fixAddress(addressBlockMatch.group(1).toString().trim())
             addrList.add(sanitize(address + ",US"))
             // all the addresses are from United States PENNSYLVANIA state
-        }
-        println(addrList)
+        }//println(addrList)
         return addrList
     }
 
-    def event_capture_set(srcUrl, ScrapeEntity entity) {
-        println("EVENTS: $srcUrl")
+    def event_capture_set(srcUrl, ScrapeEntity entity) {//println("EVENTS: $srcUrl")
         //def html = invoke(srcUrl)
         def html = getHTML(srcUrl)
         def descList = []
@@ -323,7 +323,7 @@ class UPS_Offenders22 {
     }
 //============Fixing Data==================//
 
-    def fixAddress(str) {
+    def fixAddress(str) {//println("STREET: $str\n*")
         str = str.replaceAll(/<\/span>/, ",")
         str = str.replaceAll(/<span.*?>/, "")
         str = str.replaceAll(/<\/p>/, "")
@@ -530,7 +530,7 @@ class UPS_Offenders22 {
         }
 
         attrMap[FIELDS.HEIGHT].each {
-            it=it+'"'
+            it = it + '"'
             entity.addHeight(it)
         }
 
@@ -551,11 +551,10 @@ class UPS_Offenders22 {
         }
 
         attrMap[FIELDS.SCARS].each {
-            if (it.toString().contains("Tattoo - Arm, right (non-specific) - FLAMES,"))
-                println(4)
-            def a = sanitize(it).toString()
-                .replaceAll(/, \\u0024\\u0024/, "")
-                .replaceAll(/,$/, "").trim()
+            if (it.toString().contains("Tattoo - Arm, right (non-specific) - FLAMES,"))//println(4)
+                def a = sanitize(it).toString()
+                    .replaceAll(/, \\u0024\\u0024/, "")
+                    .replaceAll(/,$/, "").trim()
             entity.addScarsMarks(sanitize(a).toString().replaceAll(/\W+$/, ""))
         }
 
@@ -566,19 +565,25 @@ class UPS_Offenders22 {
         CACHED_DATA.add(attrMap)
         String json = new Gson().toJson(CACHED_DATA)
         PrintStream out = new PrintStream(new FileOutputStream(JASON_DATA_FILE))
-        out.print(json)
-        println("CACHE CREATED\n")
+        out.print(json)//println("CACHE CREATED\n")
     }
 
     def readFromCache(def urlsList) {
         def json = new JsonParser().parse(new FileReader(HISTORY_LIST)).getAsJsonArray()
-        //  println(json.size())
-        for (int i = 0; i < json.size(); i++) {
+        println(json.size())
+         for (int i = 8001; i < 16000; i++) {
+/*            attrMap[FIELDS.URL] = json[i].asJsonObject.URL.toString().replaceAll(/"/, "").trim()
+            setdetailsLinks.remove(attrMap[FIELDS.URL])*/
             attrMap[FIELDS.URL] = json[i].asJsonObject.URL.toString().replaceAll(/"/, "").trim()
-            detailsLinks.remove(attrMap[FIELDS.URL])
-
+            if (detailsLinks.contains(attrMap[FIELDS.URL])) {
+                continue
+            }
+            attrMap[FIELDS.NAME] = json[i].asJsonObject.NAME.toString().replaceAll(/"/, "").trim()
+            println("URL: $i")
+            def entity=createPersonEntity(attrMap[FIELDS.NAME],null)
+            getMissingAddress(attrMap[FIELDS.URL],entity,null)
 /*            attrMap[FIELDS.NAME] = json[i].asJsonObject.NAME.toString().replaceAll(/"/, "").trim()
-            attrMap[FIELDS.URL] = json[i].asJsonObject.URL.toString().replaceAll(/"/, "").trim()
+
             attrMap[FIELDS.DOB] = convertToList(json[i], "DOB")
             attrMap[FIELDS.GENDER] = convertToList(json[i], "GENDER")
             attrMap[FIELDS.HAIR_COLOR] = convertToList(json[i], "HAIR_COLOR")
@@ -591,9 +596,12 @@ class UPS_Offenders22 {
             attrMap[FIELDS.ALIASES] = convertToList(json[i], "ALIASES")
             attrMap[FIELDS.EVENTS] = json[i].asJsonObject.EVENTS
             attrMap[FIELDS.ADDRESS] = json[i].asJsonObject.ADDRESS
-            create_CACHE_ENTITY(attrMap, json[i])
-            detailsLinks.remove(attrMap[FIELDS.URL])
-            attrMap.clear()*/
+            create_CACHE_ENTITY(attrMap, json[i])*/
+            detailsLinks.add(attrMap[FIELDS.URL])
+            attrMap.clear()
+            if(i==500){
+                break
+            }
         }
     }
 
@@ -630,7 +638,9 @@ class UPS_Offenders22 {
         }
 
         attrMap[FIELDS.HEIGHT].each {
-            entity.addHeight(it.toString().replaceAll(/"/, "").trim())
+            def h = it.toString().replaceAll(/"/, "").trim()
+            h += '"'
+            entity.addHeight(h)
         }
 
         attrMap[FIELDS.WEIGHT].each {
@@ -711,20 +721,19 @@ class UPS_Offenders22 {
             address.province = "PENNSYLVANIA"
             address.country = "UNITED STATES"
             entity.addAddress(address)
-        }
-
-        println("Entity: $entity.addresses\n")
+        }//println("Entity: $entity.addresses\n")
     }
 
     def getMissingAddress(def entityUrl, ScrapeEntity entity, json) {
-        println("WORKING ON MISSING ADDRESSES FOR:$entity.name")
+        ////println("WORKING ON MISSING ADDRESSES FOR:$entity.name")
         def html = getHTML(entityUrl)
         def addressMatch = html =~ /(?is)href="([^"]*)">Addresses<\/a>/
+        ////println(html)
         def addressList
         if (addressMatch) {
             def addressUrl = root + addressMatch[0][1].toString().trim()
             addressList = address_capture(addressUrl)
-        }
+        }//println("LIST: " + addressList)
         addressList.each { addrStr ->
             def addrMap = addressParser.parseAddress([text: addrStr, /*force_country: true*/])
             def street_sanitizer = { street ->
@@ -739,16 +748,17 @@ class UPS_Offenders22 {
                 context.info("ADDRESS COULD NOT BE PARSED")
             }
         }
+        attrMap[FIELDS.ADDRESS]=entity.addresses
+        createCache(attrMap,null)
 
     }
 //====================================================
 //========================Invoke================//
 
     def getHTML(def srcUrl) {
-        try {
-            println("ACCEPT/DECLINE : $srcUrl")
+        try {//println("ACCEPT/DECLINE : $srcUrl")
             driver.get(srcUrl)
-            Thread.sleep(15000)
+            Thread.sleep(8000)
             driver.findElement(new By.ByXPath("//div[@class='AcceptDeclineButton']//form//button")).click()
             Thread.sleep(5000)
             return driver.getPageSource()
@@ -773,15 +783,14 @@ class UPS_Offenders22 {
             WebElement dropDown = driver.findElement(By.xpath("//*[@id=\"Countydropdown\"]"))
             Select options = new Select(dropDown)
             List<WebElement> county = options.getOptions()
-            List<String> countyNames=new LinkedList<>()
-            println(county.size())
+            List<String> countyNames = new LinkedList<>()//println(county.size())
             def countyName = ""
             for (int i = 1; i < county.size(); i++) {
                 countyNames.add(county[i].text)
 
             }
-            for(String cN: countyNames){
-                countyName=cN
+            for (String cN : countyNames) {
+                countyName = cN
                 context.info("RECENT COUNTY: <<<<<<< $countyName >>>>>")
                 getDataFromCounties(countyName)
                 context.info("COMPLETED : $countyName >>>>>>>>>>>>>>>>>>>>>>")
@@ -817,10 +826,8 @@ class UPS_Offenders22 {
             def total = driver.findElement(new By.ByXPath("/html/body/div[4]/form/div[2]/div/div[1]/div/ul"))
                 .getText()
             total = total.replaceAll(/(?ism)^(.+?\s+of\s+)(\d+\s+)(.+)$/, '$2').toInteger()
-            lastPage = Math.ceil(total / 50).toInteger()
-            println("Total: $total LAST PAGE: $lastPage\n")
-        }
-        println("Total Page: $lastPage")
+            lastPage = Math.ceil(total / 50).toInteger()//println("Total: $total LAST PAGE: $lastPage\n")
+        }//println("Total Page: $lastPage")
         for (; page <= lastPage; page++) {
             url = "https://www.pameganslaw.state.pa.us/Search/CountySearchResults?page=$page&selectedCounty=$countyName&selectedSortBy=1&chkCountyIncarcerated=True"
             context.info("SELENIUM INVOKE: $url")
