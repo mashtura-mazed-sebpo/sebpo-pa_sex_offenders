@@ -54,7 +54,9 @@ This will reach into the DB LI_Scripts table for the version of the ofac_advance
 
 6. **If you want to run a local copy of ofac_advanced_sub_process.groovy (which is more likely), in the OfacSdnFeedDeserializer class, comment out the code between 'URL tempUrl = null' and 'final URL url = tempUrl', and instead set the tempUrl = "file:///c:/fileLocation"
 Put the -r ONLY if you are intending to load to the DB. This way, you can rerun if you need to, and the previous load will be rollback before each new run of XmlDataImporter, without you having to do explicitly in DQA
-NEVER CHECK in the code you may have commented out!**
+
+
+**NEVER CHECK in the code you may have commented out!**
 
 IF you DO want to test sdn_advanced.groovy as well:
 Here, you will use ScrapianEngine.
