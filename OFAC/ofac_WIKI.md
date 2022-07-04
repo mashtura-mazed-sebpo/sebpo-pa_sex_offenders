@@ -48,8 +48,8 @@ This is the list the 'Email Changes' option was recently added for. This is a ch
 4 If you do NOT wish to write data to DB, comment out all code in XmlDataImporter starting at 'ScrapeLoader lScrapeLoader = ' to end of method
 5 Run **XmlDataImporter** locally, with program arguments like: OFAC_LIST C:/sdn_advanced.xml -d:ofacSdn -f:c:/ofac_list.xml -r
   - If you choose to write to DB, key name must be correct
-   - Update the next arg with the actual path to where you saved the unzipped file from the web
-   - the -d option will trigger the OfacSdnFeedDeserializer, which will in turn trigger the ofac_advanced_sub_process.groovy script (where the code you are trying to update probably lives)
+  - Update the next arg with the actual path to where you saved the unzipped file from the web
+  - the -d option will trigger the OfacSdnFeedDeserializer, which will in turn trigger the ofac_advanced_sub_process.groovy script (where the code you are trying to update probably lives)
 This will reach into the DB LI_Scripts table for the version of the ofac_advanced_sub_process.groovy script that goes with key/folderName of 'ofac_advanced_sub_process', so check your environment and versions '''select * from li_scripts ls where scriptname like 'ofac_advanced_sub_process.groovy'''
 
 6. **If you want to run a local copy of ofac_advanced_sub_process.groovy (which is more likely), in the OfacSdnFeedDeserializer class, comment out the code between 'URL tempUrl = null' and 'final URL url = tempUrl', and instead set the tempUrl = "file:///c:/fileLocation"
