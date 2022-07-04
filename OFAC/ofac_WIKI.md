@@ -10,7 +10,7 @@ The source key for the list is: OFAC_LIST
 
 The list first calls the scraper: sdn_advanced.groovy
 
-# Which downloads the file: https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.zip
+**Which downloads the file: https://www.treasury.gov/ofac/downloads/sanctions/1.0/sdn_advanced.zip
 
 And unzips to reveal: sdn_advanced.xml, and sdn_advanced.xsd.
 
